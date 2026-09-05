@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Book, RecognizedCandidate } from './types'
 import { initialBooks } from './data/mockBooks'
 import { fetchCoverUrl } from './data/kakaoBooks'
+import { loadBooks, saveBooks } from './utils/storage'
 import Shelf from './screens/Shelf'
 import Confirm from './screens/Confirm'
 import Detail from './screens/Detail'
@@ -11,15 +12,22 @@ type Screen = 'shelf' | 'confirm' | 'detail' | 'search'
 
 let bookSeq = 0
 
+// Was there anything saved from a previous visit? If so, that's the real
+// starting point — the mock shelf is only for a first-ever visit.
+const savedBooks = loadBooks()
+
 export default function App() {
-  const [books, setBooks] = useState<Book[]>(initialBooks)
+  const [books, setBooks] = useState<Book[]>(savedBooks ?? initialBooks)
   const [screen, setScreen] = useState<Screen>('shelf')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const selectedBook = books.find((b) => b.id === selectedId) ?? null
 
-  // Backfill real cover art for the starter mock shelf too, not just newly saved books.
+  // Backfill real cover art for the starter mock shelf on a first-ever visit
+  // only — once something's been saved, this shouldn't re-run on the user's
+  // own books.
   useEffect(() => {
+    if (savedBooks) return
     initialBooks.forEach((b) => {
       fetchCoverUrl(b.title, b.author).then((coverUrl) => {
         if (!coverUrl) return
@@ -28,6 +36,12 @@ export default function App() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Keep the browser's copy in sync — a stand-in for real persistence until
+  // Supabase is wired up.
+  useEffect(() => {
+    saveBooks(books)
+  }, [books])
 
   function handleSave(accepted: RecognizedCandidate[]) {
     const today = new Date().toISOString().slice(0, 10)
