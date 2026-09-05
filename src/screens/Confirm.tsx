@@ -11,7 +11,7 @@ type Props = {
 }
 
 const GEMINI_PROMPT =
-  '이 사진 속 책들을 "제목 - 저자" 형식으로 한 줄씩 정리해줘. 확실하지 않은 정보는 절대 추측해서 만들어내지 말고 비워둬.'
+  '이 사진 속 책들을 "제목 - 저자 - 분류" 형식으로 한 줄씩 정리해줘. 분류는 대형서점/도서관에서 쓰는 방식으로 "대분류 > 소분류" 형태로 (예: 인문·사회과학 > 역사, 문학·예술·실무 > 소설). 확실하지 않은 정보는 절대 추측해서 만들어내지 말고 비워둬.'
 
 let seq = 0
 
@@ -43,15 +43,23 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-// Splits one line of pasted text like "데미안 - 헤르만 헤세" or just "데미안"
-// into a title/author pair. Strips leading numbering ("1. ", "1) ", "- ").
-function parseLine(raw: string): { title: string; author: string } {
+// Splits one line of pasted text like "데미안 - 헤르만 헤세 - 문학·예술·실무 > 소설"
+// (or just "데미안 - 헤르만 헤세", or just "데미안") into title/author/subject.
+// Strips leading numbering ("1. ", "1) ", "- ").
+function parseLine(raw: string): { title: string; author: string; subject: string } {
   const line = raw.trim().replace(/^(\d+[.)]|-|\*)\s*/, '')
   const parts = line.split(/\s*[-–|\t]\s*/)
-  if (parts.length >= 2 && parts[0].trim()) {
-    return { title: parts[0].trim(), author: parts.slice(1).join(' - ').trim() }
+  if (parts.length >= 3 && parts[0].trim()) {
+    return {
+      title: parts[0].trim(),
+      author: parts[1].trim(),
+      subject: parts.slice(2).join(' - ').trim(),
+    }
   }
-  return { title: line.trim(), author: '' }
+  if (parts.length === 2 && parts[0].trim()) {
+    return { title: parts[0].trim(), author: parts[1].trim(), subject: '' }
+  }
+  return { title: line.trim(), author: '', subject: '' }
 }
 
 export default function Confirm({ onBack, onSave }: Props) {
@@ -82,8 +90,15 @@ export default function Confirm({ onBack, onSave }: Props) {
     const lines = pasteText.split('\n').map((l) => l.trim()).filter(Boolean)
     if (lines.length === 0) return
     const parsed: RecognizedCandidate[] = lines.map((line, i) => {
-      const { title, author } = parseLine(line)
-      return { id: `pasted-${Date.now()}-${seq++}`, title, author, hue: candidates.length + i, recognized: false }
+      const { title, author, subject } = parseLine(line)
+      return {
+        id: `pasted-${Date.now()}-${seq++}`,
+        title,
+        author,
+        subject: subject || undefined,
+        hue: candidates.length + i,
+        recognized: false,
+      }
     })
     setCandidates((cs) => [...cs, ...parsed])
     setPasteText('')
@@ -181,7 +196,9 @@ export default function Confirm({ onBack, onSave }: Props) {
           <textarea
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
-            placeholder={'데미안 - 헤르만 헤세\n군주론 - 니콜로 마키아벨리\n사피엔스 - 유발 하라리'}
+            placeholder={
+              '데미안 - 헤르만 헤세 - 문학·예술·실무 > 소설\n군주론 - 니콜로 마키아벨리 - 인문·사회과학 > 정치\n사피엔스 - 유발 하라리 - 인문·사회과학 > 역사'
+            }
             rows={5}
             style={{
               fontSize: 15,
@@ -259,7 +276,7 @@ export default function Confirm({ onBack, onSave }: Props) {
                     <input
                       value={c.subject ?? ''}
                       onChange={(e) => updateField(c.id, 'subject', e.target.value)}
-                      placeholder="과목 태그 (선택, 예: 행정법)"
+                      placeholder="분류 (선택, 예: 인문·사회과학 > 역사)"
                       style={{ fontSize: 11, color: 'var(--accent)', background: 'transparent', width: '100%' }}
                     />
                   </div>
