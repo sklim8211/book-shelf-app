@@ -13,10 +13,11 @@ type Props = {
 
 const UNSORTED = '미분류'
 
-// "인문·사회과학 > 역사" 같은 분류 문자열에서 방을 나누는 기준이 되는 대분류만 뽑아낸다.
-function topCategory(subject?: string): string {
-  if (!subject?.trim()) return UNSORTED
-  return subject.split('>')[0].trim() || UNSORTED
+// 분류 문자열을 방 이름으로 그대로 쓴다 — "인문·사회과학 > 역사"와 "인문·사회과학 > 정치"는
+// 서로 다른 방으로 남아야 하므로, 대분류만 뽑아 뭉개지 않는다.
+function roomKey(subject?: string): string {
+  const trimmed = subject?.trim()
+  return trimmed || UNSORTED
 }
 
 export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: Props) {
@@ -28,7 +29,7 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
     const order: string[] = []
     const byCategory = new Map<string, Book[]>()
     books.forEach((b) => {
-      const cat = topCategory(b.subject)
+      const cat = roomKey(b.subject)
       if (!byCategory.has(cat)) {
         order.push(cat)
         byCategory.set(cat, [])
@@ -40,7 +41,7 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
   }, [books])
 
   const roomNames = rooms.map((r) => r.category)
-  const visibleBooks = activeRoom ? books.filter((b) => topCategory(b.subject) === activeRoom) : books
+  const visibleBooks = activeRoom ? books.filter((b) => roomKey(b.subject) === activeRoom) : books
 
   function selectRoom(room: string | null) {
     setActiveRoom(room)
