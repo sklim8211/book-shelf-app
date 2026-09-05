@@ -11,16 +11,36 @@ type Props = {
   onAddBooks: () => void
 }
 
-export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: Props) {
-  const [activeSubject, setActiveSubject] = useState<string | null>(null)
+const UNSORTED = '미분류'
 
-  const subjects = useMemo(() => {
-    const set = new Set<string>()
-    books.forEach((b) => b.subject && set.add(b.subject))
-    return Array.from(set)
+// "인문·사회과학 > 역사" 같은 분류 문자열에서 방을 나누는 기준이 되는 대분류만 뽑아낸다.
+function topCategory(subject?: string): string {
+  if (!subject?.trim()) return UNSORTED
+  return subject.split('>')[0].trim() || UNSORTED
+}
+
+export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: Props) {
+  const [activeRoom, setActiveRoom] = useState<string | null>(null)
+
+  // 책을 대분류별로 묶어서 "방"을 만든다 — 처음 등장한 순서대로, 미분류는 맨 뒤로.
+  const rooms = useMemo(() => {
+    const order: string[] = []
+    const byCategory = new Map<string, Book[]>()
+    books.forEach((b) => {
+      const cat = topCategory(b.subject)
+      if (!byCategory.has(cat)) {
+        order.push(cat)
+        byCategory.set(cat, [])
+      }
+      byCategory.get(cat)!.push(b)
+    })
+    const sortedOrder = [...order.filter((c) => c !== UNSORTED), ...order.filter((c) => c === UNSORTED)]
+    return sortedOrder.map((category) => ({ category, books: byCategory.get(category)! }))
   }, [books])
 
-  const visibleBooks = activeSubject ? books.filter((b) => b.subject === activeSubject) : books
+  const roomNames = rooms.map((r) => r.category)
+  const visibleBooks = activeRoom ? books.filter((b) => topCategory(b.subject) === activeRoom) : books
+  const visibleRooms = activeRoom ? rooms.filter((r) => r.category === activeRoom) : rooms
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', position: 'relative' }}>
@@ -36,7 +56,7 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 600 }}>내 서재</div>
           <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-            {activeSubject ? `${visibleBooks.length}권 · ${activeSubject}` : `${books.length}권`}
+            {activeRoom ? `${visibleBooks.length}권 · ${activeRoom}` : `${books.length}권`}
           </div>
         </div>
         <IconButton aria-label="검색" onClick={onOpenSearch}>
@@ -44,7 +64,7 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
         </IconButton>
       </div>
 
-      {subjects.length > 0 && (
+      {roomNames.length > 1 && (
         <div
           style={{
             display: 'flex',
@@ -54,7 +74,7 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
           }}
         >
           <button
-            onClick={() => setActiveSubject(null)}
+            onClick={() => setActiveRoom(null)}
             style={{
               flexShrink: 0,
               height: 30,
@@ -62,17 +82,17 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
               borderRadius: 15,
               fontSize: 12,
               fontWeight: 600,
-              background: activeSubject === null ? 'var(--accent)' : 'var(--surface)',
-              color: activeSubject === null ? 'white' : 'var(--muted)',
+              background: activeRoom === null ? 'var(--accent)' : 'var(--surface)',
+              color: activeRoom === null ? 'white' : 'var(--muted)',
               border: '1px solid var(--border)',
             }}
           >
             전체
           </button>
-          {subjects.map((s) => (
+          {roomNames.map((r) => (
             <button
-              key={s}
-              onClick={() => setActiveSubject(s)}
+              key={r}
+              onClick={() => setActiveRoom(r)}
               style={{
                 flexShrink: 0,
                 height: 30,
@@ -80,12 +100,12 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
                 borderRadius: 15,
                 fontSize: 12,
                 fontWeight: 600,
-                background: activeSubject === s ? 'var(--accent)' : 'var(--surface)',
-                color: activeSubject === s ? 'white' : 'var(--muted)',
+                background: activeRoom === r ? 'var(--accent)' : 'var(--surface)',
+                color: activeRoom === r ? 'white' : 'var(--muted)',
                 border: '1px solid var(--border)',
               }}
             >
-              {s}
+              {r}
             </button>
           ))}
         </div>
@@ -128,21 +148,40 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
             minHeight: 0,
             overflowY: 'auto',
             padding: '20px 20px 110px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-            gap: 14,
-            alignContent: 'start',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
           }}
         >
-          {visibleBooks.map((book) => (
-            <button
-              key={book.id}
-              onClick={() => onOpenBook(book.id)}
-              aria-label={`${book.title} 상세 보기`}
-              style={{ aspectRatio: '2 / 3', display: 'block', textAlign: 'left' }}
-            >
-              <BookCover title={book.title} author={book.author} hue={book.hue} coverUrl={book.coverUrl} />
-            </button>
+          {visibleRooms.map((room) => (
+            <div key={room.category} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {roomNames.length > 1 && (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, fontWeight: 600 }}>
+                    {room.category}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>{room.books.length}권</div>
+                </div>
+              )}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                  gap: 14,
+                }}
+              >
+                {room.books.map((book) => (
+                  <button
+                    key={book.id}
+                    onClick={() => onOpenBook(book.id)}
+                    aria-label={`${book.title} 상세 보기`}
+                    style={{ aspectRatio: '2 / 3', display: 'block', textAlign: 'left' }}
+                  >
+                    <BookCover title={book.title} author={book.author} hue={book.hue} coverUrl={book.coverUrl} />
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
