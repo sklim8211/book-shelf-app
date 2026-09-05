@@ -16,10 +16,20 @@ type KakaoBookResponse = {
 
 const cache = new Map<string, string | null>()
 
+// Strips spacing/punctuation so "총, 균, 쇠" and "총·균·쇠" compare equal.
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[\s():,.\-·"'!?]/g, '')
+}
+
 /**
  * Looks up a cover-image URL for a title (+ optional author to disambiguate).
- * Returns null when there's no key configured, no match, or the request fails —
- * callers should fall back to the flat-color placeholder in that case.
+ * Only returns a cover when the title genuinely matches a search result (and
+ * the author too, when one was given) — a same-titled but different book is
+ * treated the same as no match. Returns null in every other case (no key
+ * configured, no confident match, or the request fails); callers should fall
+ * back to the flat-color placeholder rather than show a possibly-wrong cover.
  */
 export async function fetchCoverUrl(title: string, author?: string): Promise<string | null> {
   const query = title.trim()
@@ -31,7 +41,7 @@ export async function fetchCoverUrl(title: string, author?: string): Promise<str
   try {
     const url = new URL('https://dapi.kakao.com/v3/search/book')
     url.searchParams.set('query', query)
-    url.searchParams.set('size', '5')
+    url.searchParams.set('size', '10')
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `KakaoAK ${KAKAO_KEY}` },
@@ -47,14 +57,17 @@ export async function fetchCoverUrl(title: string, author?: string): Promise<str
       return null
     }
 
-    // Prefer a result whose author list matches, when we have an author to check.
-    const normalizedAuthor = author?.trim().toLowerCase()
-    const best =
-      (normalizedAuthor &&
-        data.documents.find((d) => d.authors.some((a) => a.toLowerCase().includes(normalizedAuthor)))) ||
-      data.documents[0]
+    const normalizedTitle = normalize(query)
+    const normalizedAuthor = author?.trim() ? normalize(author) : null
 
-    const cover = best.thumbnail || null
+    // Only titles that actually match, not just "showed up in a fuzzy search".
+    const titleMatches = data.documents.filter((d) => normalize(d.title) === normalizedTitle)
+
+    const best = normalizedAuthor
+      ? titleMatches.find((d) => d.authors.some((a) => normalize(a) === normalizedAuthor)) ?? null
+      : titleMatches[0] ?? null
+
+    const cover = best?.thumbnail || null
     cache.set(cacheKey, cover)
     return cover
   } catch {
