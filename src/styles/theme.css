@@ -1,0 +1,78 @@
+:root {
+  --bg: oklch(0.97 0.012 75);
+  --ink: oklch(0.22 0.02 60);
+  --muted: oklch(0.5 0.02 60);
+  --border: oklch(0.88 0.015 70);
+  --surface: oklch(0.995 0.006 75);
+  --accent: oklch(0.62 0.14 40);
+  --accent-ink: oklch(0.98 0.01 40);
+
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-sans: 'Work Sans', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-shell > * {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Cover swatches use the same curated hue set as the design mockup */
+.cover-hue-0 { background: oklch(62% 0.11 30); }
+.cover-hue-1 { background: oklch(62% 0.11 70); }
+.cover-hue-2 { background: oklch(58% 0.10 145); }
+.cover-hue-3 { background: oklch(60% 0.10 195); }
+.cover-hue-4 { background: oklch(58% 0.11 250); }
+.cover-hue-5 { background: oklch(58% 0.11 300); }
+.cover-hue-6 { background: oklch(62% 0.12 15); }
