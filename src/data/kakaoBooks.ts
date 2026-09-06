@@ -28,26 +28,35 @@ const EMPTY_INFO: BookInfo = { coverUrl: null, price: null, salePrice: null, sta
 
 const cache = new Map<string, BookInfo>()
 
+// Strips spacing/punctuation so "김영하" and "김 영하" (or "총, 균, 쇠" vs "총·균·쇠")
+// compare equal when checking author matches.
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[\s():,.\-·"'!?]/g, '')
+}
+
 /**
  * Looks up a book's cover, price, and sale status for a title (+ optional
- * author to help Kakao's own search rank the right book first). Just takes
- * the top search result — covers/info show up far more often this way, and
- * a wrong one is easy for the person to fix by hand; nothing at all was
- * worse than an occasional miss. Returns all-null fields when there's no key
- * configured, no results, or the request fails.
+ * author). Kakao's search endpoint only takes one free-text query, so
+ * "제목 저자" search doesn't strictly filter by author — it just influences
+ * ranking. To avoid picking a same-titled book by a different author, this
+ * scans the top results and prefers one whose author list actually matches;
+ * only when none match does it fall back to the top result. Nothing at all
+ * was worse than an occasional miss, so it still always returns something
+ * when the search has any results at all.
  */
 export async function fetchBookInfo(title: string, author?: string): Promise<BookInfo> {
   const title2 = title.trim()
   if (!title2 || !KAKAO_KEY) return EMPTY_INFO
 
-  const query = author?.trim() ? `${title2} ${author.trim()}` : title2
+  const author2 = author?.trim()
+  const query = author2 ? `${title2} ${author2}` : title2
   const cacheKey = query
   if (cache.has(cacheKey)) return cache.get(cacheKey)!
 
   try {
     const url = new URL('https://dapi.kakao.com/v3/search/book')
     url.searchParams.set('query', query)
-    url.searchParams.set('size', '5')
+    url.searchParams.set('size', '10')
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `KakaoAK ${KAKAO_KEY}` },
@@ -58,7 +67,12 @@ export async function fetchBookInfo(title: string, author?: string): Promise<Boo
     }
 
     const data = (await res.json()) as KakaoBookResponse
-    const doc = data.documents?.[0]
+    const docs = data.documents ?? []
+
+    const doc = author2
+      ? docs.find((d) => d.authors?.some((a) => normalize(a) === normalize(author2))) ?? docs[0]
+      : docs[0]
+
     const info: BookInfo = doc
       ? {
           coverUrl: doc.thumbnail || null,
