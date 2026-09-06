@@ -14,6 +14,16 @@ function formatAdded(iso: string) {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 등록`
 }
 
+function formatWon(n: number) {
+  return `${n.toLocaleString('ko-KR')}원`
+}
+
+function usedSearchUrl(title: string) {
+  return `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Used&SearchWord=${encodeURIComponent(title)}`
+}
+
+const SELL_URL = 'https://www.aladin.co.kr/shop/usedshop/wc2b_sales.aspx'
+
 export default function Detail({ book, onBack, onDelete }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
@@ -67,6 +77,55 @@ export default function Detail({ book, onBack, onDelete }: Props) {
               {book.subject}
             </div>
           )}
+
+          {(book.status || book.price || book.salePrice) && (
+            <div style={{ marginTop: 14, fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>
+              {book.status && book.status !== '정상' && (
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.status} · </span>
+              )}
+              {book.salePrice ? formatWon(book.salePrice) : book.price ? formatWon(book.price) : null}
+              {book.salePrice && book.price && book.salePrice < book.price && (
+                <span style={{ textDecoration: 'line-through', marginLeft: 6, opacity: 0.6 }}>
+                  {formatWon(book.price)}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+            <a
+              href={usedSearchUrl(book.title)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--ink)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 15,
+                padding: '7px 14px',
+              }}
+            >
+              중고 시세 확인
+            </a>
+            <a
+              href={SELL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--ink)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 15,
+                padding: '7px 14px',
+              }}
+            >
+              중고로 팔기
+            </a>
+          </div>
         </div>
       </div>
 

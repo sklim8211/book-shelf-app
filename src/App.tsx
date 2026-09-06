@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Book, RecognizedCandidate } from './types'
 import { initialBooks } from './data/mockBooks'
-import { fetchCoverUrl } from './data/kakaoBooks'
+import { fetchBookInfo } from './data/kakaoBooks'
 import { loadBooks, saveBooks } from './utils/storage'
 import Shelf from './screens/Shelf'
 import Confirm from './screens/Confirm'
@@ -29,9 +29,20 @@ export default function App() {
   useEffect(() => {
     if (savedBooks) return
     initialBooks.forEach((b) => {
-      fetchCoverUrl(b.title, b.author).then((coverUrl) => {
-        if (!coverUrl) return
-        setBooks((bs) => bs.map((x) => (x.id === b.id ? { ...x, coverUrl } : x)))
+      fetchBookInfo(b.title, b.author).then(({ coverUrl, price, salePrice, status }) => {
+        setBooks((bs) =>
+          bs.map((x) =>
+            x.id === b.id
+              ? {
+                  ...x,
+                  coverUrl: coverUrl ?? x.coverUrl,
+                  price: price ?? x.price,
+                  salePrice: salePrice ?? x.salePrice,
+                  status: status ?? x.status,
+                }
+              : x,
+          ),
+        )
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,6 +64,9 @@ export default function App() {
       hue: c.hue,
       coverUrl: c.coverUrl,
       subject: c.subject?.trim() || undefined,
+      price: c.price,
+      salePrice: c.salePrice,
+      status: c.status,
     }))
     setBooks((bs) => [...newBooks, ...bs])
     setScreen('shelf')

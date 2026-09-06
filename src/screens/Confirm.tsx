@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { RecognizedCandidate } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
-import { fetchCoverUrl } from '../data/kakaoBooks'
+import { fetchBookInfo } from '../data/kakaoBooks'
 import { BackIcon, CloseIcon, PlusIcon } from '../components/icons'
 
 type Props = {
@@ -76,13 +76,24 @@ export default function Confirm({ onBack, onSave }: Props) {
     setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
   }
 
-  // Look up a real cover once the person finishes typing a title (on blur,
-  // not on every keystroke).
-  function lookupCover(c: RecognizedCandidate) {
+  // Look up a real cover + price/절판여부 once the person finishes typing a
+  // title (on blur, not on every keystroke).
+  function lookupInfo(c: RecognizedCandidate) {
     if (!c.title.trim()) return
-    fetchCoverUrl(c.title, c.author).then((coverUrl) => {
-      if (!coverUrl) return
-      setCandidates((cs) => cs.map((x) => (x.id === c.id ? { ...x, coverUrl } : x)))
+    fetchBookInfo(c.title, c.author).then(({ coverUrl, price, salePrice, status }) => {
+      setCandidates((cs) =>
+        cs.map((x) =>
+          x.id === c.id
+            ? {
+                ...x,
+                coverUrl: coverUrl ?? x.coverUrl,
+                price: price ?? x.price,
+                salePrice: salePrice ?? x.salePrice,
+                status: status ?? x.status,
+              }
+            : x,
+        ),
+      )
     })
   }
 
@@ -102,7 +113,7 @@ export default function Confirm({ onBack, onSave }: Props) {
     })
     setCandidates((cs) => [...cs, ...parsed])
     setPasteText('')
-    parsed.forEach((c) => lookupCover(c))
+    parsed.forEach((c) => lookupInfo(c))
   }
 
   function remove(id: string) {
@@ -253,7 +264,7 @@ export default function Confirm({ onBack, onSave }: Props) {
                     <input
                       value={c.title}
                       onChange={(e) => updateField(c.id, 'title', e.target.value)}
-                      onBlur={() => lookupCover(c)}
+                      onBlur={() => lookupInfo(c)}
                       placeholder="제목을 입력하세요"
                       style={{
                         fontSize: 14,
@@ -269,7 +280,7 @@ export default function Confirm({ onBack, onSave }: Props) {
                     <input
                       value={c.author}
                       onChange={(e) => updateField(c.id, 'author', e.target.value)}
-                      onBlur={() => lookupCover(c)}
+                      onBlur={() => lookupInfo(c)}
                       placeholder="저자 (선택)"
                       style={{ fontSize: 12, color: 'var(--muted)', background: 'transparent', width: '100%' }}
                     />
