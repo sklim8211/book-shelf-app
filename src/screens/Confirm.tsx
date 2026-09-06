@@ -1,13 +1,21 @@
-import { useState } from 'react'
-import type { RecognizedCandidate } from '../types'
+import { useMemo, useState } from 'react'
+import type { Book, RecognizedCandidate } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { fetchBookInfo } from '../data/kakaoBooks'
 import { BackIcon, CloseIcon, PlusIcon } from '../components/icons'
 
 type Props = {
+  existingBooks: Book[]
   onBack: () => void
   onSave: (accepted: RecognizedCandidate[]) => void
+}
+
+// 공백/구두점을 지워서 "총, 균, 쇠"와 "총·균·쇠"를 같은 책으로 인식한다.
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[\s():,.\-·"'!?]/g, '')
 }
 
 const GEMINI_PROMPT =
@@ -62,10 +70,17 @@ function parseLine(raw: string): { title: string; author: string; subject: strin
   return { title: line.trim(), author: '', subject: '' }
 }
 
-export default function Confirm({ onBack, onSave }: Props) {
+export default function Confirm({ existingBooks, onBack, onSave }: Props) {
   const [candidates, setCandidates] = useState<RecognizedCandidate[]>([])
   const [pasteText, setPasteText] = useState('')
   const [copyStatus, setCopyStatus] = useState<string | null>(null)
+
+  // 이미 서재에 있는 제목들 — 중복구매 경고용.
+  const existingTitles = useMemo(() => new Set(existingBooks.map((b) => normalize(b.title))), [existingBooks])
+
+  function isDuplicate(c: RecognizedCandidate): boolean {
+    return c.title.trim().length > 0 && existingTitles.has(normalize(c.title))
+  }
 
   async function handleCopyPrompt() {
     const ok = await copyText(GEMINI_PROMPT)
@@ -290,6 +305,11 @@ export default function Confirm({ onBack, onSave }: Props) {
                       placeholder="분류 (선택, 예: 인문·사회과학 > 역사)"
                       style={{ fontSize: 11, color: 'var(--accent)', background: 'transparent', width: '100%' }}
                     />
+                    {isDuplicate(c) && (
+                      <div style={{ fontSize: 11, color: '#c0392b', fontWeight: 600 }}>
+                        이미 서재에 있는 책이에요
+                      </div>
+                    )}
                   </div>
 
                   <button

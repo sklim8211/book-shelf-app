@@ -77,6 +77,10 @@ export default function App() {
     setScreen('shelf')
   }
 
+  function handleUpdate(id: string, patch: Partial<Pick<Book, 'memo' | 'lentTo'>>) {
+    setBooks((bs) => bs.map((b) => (b.id === id ? { ...b, ...patch } : b)))
+  }
+
   function openBook(id: string) {
     setSelectedId(id)
     setScreen('detail')
@@ -92,9 +96,16 @@ export default function App() {
           onAddBooks={() => setScreen('confirm')}
         />
       )}
-      {screen === 'confirm' && <Confirm onBack={() => setScreen('shelf')} onSave={handleSave} />}
+      {screen === 'confirm' && (
+        <Confirm existingBooks={books} onBack={() => setScreen('shelf')} onSave={handleSave} />
+      )}
       {screen === 'detail' && selectedBook && (
-        <Detail book={selectedBook} onBack={() => setScreen('shelf')} onDelete={handleDelete} />
+        <Detail
+          book={selectedBook}
+          onBack={() => setScreen('shelf')}
+          onDelete={handleDelete}
+          onUpdate={(patch) => handleUpdate(selectedBook.id, patch)}
+        />
       )}
       {screen === 'search' && <Search books={books} onBack={() => setScreen('shelf')} onOpenBook={openBook} />}
     </div>

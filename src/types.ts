@@ -10,6 +10,8 @@ export type Book = {
   price?: number // 정가, from Kakao 도서 검색 API
   salePrice?: number // 판매가, from Kakao 도서 검색 API
   status?: string // 판매 상태 ("정상", "품절", "절판" 등), from Kakao 도서 검색 API
+  memo?: string // 사용자가 직접 남긴 한 줄 메모
+  lentTo?: string // 이 책을 빌려간 사람 (비어있으면 안 빌려준 것)
 }
 
 // A candidate row on the Confirm screen — before it's accepted into the shelf.

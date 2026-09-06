@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import type { Book } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
@@ -7,6 +8,7 @@ type Props = {
   book: Book
   onBack: () => void
   onDelete: (id: string) => void
+  onUpdate: (patch: Partial<Pick<Book, 'memo' | 'lentTo'>>) => void
 }
 
 function formatAdded(iso: string) {
@@ -24,7 +26,16 @@ function usedSearchUrl(title: string) {
 
 const SELL_URL = 'https://www.aladin.co.kr/shop/usedshop/wc2b_sales.aspx'
 
-export default function Detail({ book, onBack, onDelete }: Props) {
+export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
+  // 로컬 입력값 — 책이 바뀌면(다른 책 상세로 이동) 그 책의 값으로 다시 맞춘다.
+  const [memo, setMemo] = useState(book.memo ?? '')
+  const [lentTo, setLentTo] = useState(book.lentTo ?? '')
+
+  useEffect(() => {
+    setMemo(book.memo ?? '')
+    setLentTo(book.lentTo ?? '')
+  }, [book.id])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <div style={{ padding: 16, display: 'flex', alignItems: 'center' }}>
@@ -36,10 +47,12 @@ export default function Detail({ book, onBack, onDelete }: Props) {
       <div
         style={{
           flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          padding: '0 24px 24px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '0 24px',
+          gap: 28,
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -126,6 +139,42 @@ export default function Detail({ book, onBack, onDelete }: Props) {
               중고로 팔기
             </a>
           </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>한 줄 메모</div>
+          <input
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            onBlur={() => onUpdate({ memo: memo.trim() || undefined })}
+            placeholder="이 책에 대한 짧은 생각을 남겨보세요"
+            style={{
+              fontSize: 14,
+              padding: '10px 12px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 10,
+              width: '100%',
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>빌려준 사람</div>
+          <input
+            value={lentTo}
+            onChange={(e) => setLentTo(e.target.value)}
+            onBlur={() => onUpdate({ lentTo: lentTo.trim() || undefined })}
+            placeholder="빌려줬다면 누구인지 적어두세요"
+            style={{
+              fontSize: 14,
+              padding: '10px 12px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 10,
+              width: '100%',
+            }}
+          />
         </div>
       </div>
 
