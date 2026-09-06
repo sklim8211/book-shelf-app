@@ -118,6 +118,7 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
                 border: '1px solid var(--border)',
                 borderRadius: 15,
                 padding: '7px 14px',
+                textDecoration: 'none',
               }}
             >
               중고 시세 확인
@@ -134,6 +135,7 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
                 border: '1px solid var(--border)',
                 borderRadius: 15,
                 padding: '7px 14px',
+                textDecoration: 'none',
               }}
             >
               중고로 팔기

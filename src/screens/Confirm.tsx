@@ -157,9 +157,9 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              '카메라 앱으로 책 사진을 찍으세요',
+              'vFlat Scan 앱으로 책장을 스캔해서 PDF로 저장하세요 (일반 사진보다 훨씬 잘 인식돼요)',
               '아래 "지시문 복사"를 누르세요',
-              '구글 제미나이를 열어 사진을 올리고, 복사한 지시문을 붙여넣으세요',
+              '구글 제미나이를 열어 그 PDF를 올리고, 복사한 지시문을 붙여넣으세요',
               '제미나이가 준 목록을 복사해서, 아래 칸에 붙여넣으세요',
             ].map((step, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
