@@ -77,7 +77,7 @@ export default function App() {
     setScreen('shelf')
   }
 
-  function handleUpdate(id: string, patch: Partial<Pick<Book, 'memo' | 'lentTo'>>) {
+  function handleUpdate(id: string, patch: Partial<Book>) {
     setBooks((bs) => bs.map((b) => (b.id === id ? { ...b, ...patch } : b)))
   }
 

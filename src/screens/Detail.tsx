@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import type { Book } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
+import { fetchBookInfo } from '../data/kakaoBooks'
 import { BackIcon } from '../components/icons'
 
 type Props = {
   book: Book
   onBack: () => void
   onDelete: (id: string) => void
-  onUpdate: (patch: Partial<Pick<Book, 'memo' | 'lentTo'>>) => void
+  onUpdate: (patch: Partial<Book>) => void
 }
 
 function formatAdded(iso: string) {
@@ -30,11 +31,21 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
   // 로컬 입력값 — 책이 바뀌면(다른 책 상세로 이동) 그 책의 값으로 다시 맞춘다.
   const [memo, setMemo] = useState(book.memo ?? '')
   const [lentTo, setLentTo] = useState(book.lentTo ?? '')
+  const [refetching, setRefetching] = useState(false)
 
   useEffect(() => {
     setMemo(book.memo ?? '')
     setLentTo(book.lentTo ?? '')
   }, [book.id])
+
+  // 예전에 잘못 매칭된 표지/정가를 다시 조회해서 덮어쓴다 — 이미 저장된 책은
+  // 코드를 고쳐도 자동으로 다시 조회되지 않기 때문에 필요.
+  async function refetchInfo() {
+    setRefetching(true)
+    const { coverUrl, price, salePrice, status } = await fetchBookInfo(book.title, book.author)
+    onUpdate({ coverUrl: coverUrl ?? undefined, price: price ?? undefined, salePrice: salePrice ?? undefined, status: status ?? undefined })
+    setRefetching(false)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
@@ -71,6 +82,13 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
             {book.title}
           </div>
           <div style={{ marginTop: 4, fontSize: 14, color: 'var(--muted)' }}>{book.author}</div>
+          <button
+            onClick={refetchInfo}
+            disabled={refetching}
+            style={{ marginTop: 6, fontSize: 11, color: 'var(--muted)', textDecoration: 'underline' }}
+          >
+            {refetching ? '다시 찾는 중…' : '표지·정가 다시 찾기'}
+          </button>
           <div style={{ marginTop: 6, fontSize: 12, color: 'var(--muted)' }}>
             {[book.publisher, formatAdded(book.addedAt)].filter(Boolean).join(' · ')}
           </div>
