@@ -3,6 +3,7 @@ import type { Book, RecognizedCandidate } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { fetchBookInfo } from '../data/kakaoBooks'
+import { PRESET_CATEGORIES } from '../data/categories'
 import { BackIcon, CloseIcon, PlusIcon } from '../components/icons'
 
 type Props = {
@@ -19,7 +20,7 @@ function normalize(s: string): string {
 }
 
 const GEMINI_PROMPT =
-  '이 사진 속 책들을 한 줄에 한 권씩, 반드시 "제목 - 저자 - 분류" 형식으로만 정리해줘. 다른 설명이나 번호, 괄호는 붙이지 마. 분류는 대형서점처럼 "대분류 > 소분류" 형태로 적어줘.\n예시:\n데미안 - 헤르만 헤세 - 문학·예술·실무 > 소설\n사피엔스 - 유발 하라리 - 인문·사회과학 > 역사\n확실하지 않은 정보는 추측하지 말고 비워둬.'
+  `이 사진 속 책들을 한 줄에 한 권씩, 반드시 "제목 - 저자 - 분류" 형식으로만 정리해줘. 다른 설명이나 번호, 괄호는 붙이지 마. 분류의 대분류는 반드시 다음 중 하나로만 적어줘: ${PRESET_CATEGORIES.join(', ')}. 필요하면 "대분류 > 소분류" 형태로 소분류를 더 붙여도 돼.\n예시:\n데미안 - 헤르만 헤세 - 문학 > 소설\n사피엔스 - 유발 하라리 - 인문학 > 역사\n확실하지 않은 정보는 추측하지 말고 비워둬.`
 
 let seq = 0
 
@@ -89,6 +90,17 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
 
   function updateField(id: string, field: 'title' | 'author' | 'subject', value: string) {
     setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
+  }
+
+  // "대분류 > 소분류"에서 대분류만 뽑아 프리셋 버튼의 선택 여부를 표시한다.
+  function mainCategory(subject?: string): string {
+    return (subject ?? '').split('>')[0].trim()
+  }
+
+  // 프리셋 버튼을 누르면 대분류만 바꾸고, 이미 적어둔 소분류(> 뒤)는 그대로 둔다.
+  function pickCategory(c: RecognizedCandidate, cat: string) {
+    const rest = (c.subject ?? '').split('>').slice(1).join('>').trim()
+    updateField(c.id, 'subject', rest ? `${cat} > ${rest}` : cat)
   }
 
   // Look up a real cover + price/절판여부 once the person finishes typing a
@@ -314,6 +326,29 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
                           color: c.subject ? 'var(--accent)' : 'var(--muted)',
                         }}
                       />
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {PRESET_CATEGORIES.map((cat) => {
+                        const active = mainCategory(c.subject) === cat
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => pickCategory(c, cat)}
+                            style={{
+                              height: 26,
+                              padding: '0 10px',
+                              borderRadius: 13,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              border: '1px solid var(--border)',
+                              background: active ? 'var(--accent)' : 'var(--surface)',
+                              color: active ? 'white' : 'var(--muted)',
+                            }}
+                          >
+                            {cat}
+                          </button>
+                        )
+                      })}
                     </div>
                     {isDuplicate(c) && (
                       <div style={{ fontSize: 12, color: '#c0392b', fontWeight: 600 }}>

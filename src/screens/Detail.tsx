@@ -3,6 +3,7 @@ import type { Book } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { fetchBookInfo } from '../data/kakaoBooks'
+import { PRESET_CATEGORIES } from '../data/categories'
 import { BackIcon } from '../components/icons'
 
 type Props = {
@@ -47,6 +48,19 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
     const { coverUrl, price, salePrice, status } = await fetchBookInfo(book.title, book.author)
     onUpdate({ coverUrl: coverUrl ?? undefined, price: price ?? undefined, salePrice: salePrice ?? undefined, status: status ?? undefined })
     setRefetching(false)
+  }
+
+  // "대분류 > 소분류"에서 대분류만 뽑아 프리셋 버튼의 선택 여부를 표시한다.
+  function mainCategory(s: string): string {
+    return s.split('>')[0].trim()
+  }
+
+  // 프리셋 버튼을 누르면 대분류만 바꾸고, 이미 적어둔 소분류(> 뒤)는 그대로 둔다. 바로 저장까지 반영.
+  function pickCategory(cat: string) {
+    const rest = subject.split('>').slice(1).join('>').trim()
+    const next = rest ? `${cat} > ${rest}` : cat
+    setSubject(next)
+    onUpdate({ subject: next })
   }
 
   return (
@@ -148,11 +162,34 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>분류</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {PRESET_CATEGORIES.map((cat) => {
+              const active = mainCategory(subject) === cat
+              return (
+                <button
+                  key={cat}
+                  onClick={() => pickCategory(cat)}
+                  style={{
+                    height: 28,
+                    padding: '0 12px',
+                    borderRadius: 14,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    border: '1px solid var(--border)',
+                    background: active ? 'var(--accent)' : 'var(--surface)',
+                    color: active ? 'white' : 'var(--muted)',
+                  }}
+                >
+                  {cat}
+                </button>
+              )
+            })}
+          </div>
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             onBlur={() => onUpdate({ subject: subject.trim() || undefined })}
-            placeholder="분류를 입력하세요 (선택, 예: 인문·사회과학 > 역사)"
+            placeholder="분류를 입력하세요 (선택, 예: 인문학 > 역사)"
             style={{
               fontSize: 14,
               padding: '10px 12px',
