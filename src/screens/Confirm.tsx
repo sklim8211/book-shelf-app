@@ -299,12 +299,22 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
                       placeholder="저자 (선택)"
                       style={{ fontSize: 14, padding: '4px 2px', color: 'var(--muted)', background: 'transparent', width: '100%' }}
                     />
-                    <input
-                      value={c.subject ?? ''}
-                      onChange={(e) => updateField(c.id, 'subject', e.target.value)}
-                      placeholder="분류 (선택, 예: 인문·사회과학 > 역사)"
-                      style={{ fontSize: 13, padding: '4px 2px', color: 'var(--accent)', background: 'transparent', width: '100%' }}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', flexShrink: 0 }}>분류</span>
+                      <input
+                        value={c.subject ?? ''}
+                        onChange={(e) => updateField(c.id, 'subject', e.target.value)}
+                        placeholder="선택 사항 — 비워두면 나중에 추가 가능"
+                        style={{
+                          fontSize: 13,
+                          padding: '4px 2px',
+                          background: 'transparent',
+                          width: '100%',
+                          fontStyle: c.subject ? 'normal' : 'italic',
+                          color: c.subject ? 'var(--accent)' : 'var(--muted)',
+                        }}
+                      />
+                    </div>
                     {isDuplicate(c) && (
                       <div style={{ fontSize: 12, color: '#c0392b', fontWeight: 600 }}>
                         이미 서재에 있는 책이에요

@@ -31,11 +31,13 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
   // 로컬 입력값 — 책이 바뀌면(다른 책 상세로 이동) 그 책의 값으로 다시 맞춘다.
   const [memo, setMemo] = useState(book.memo ?? '')
   const [lentTo, setLentTo] = useState(book.lentTo ?? '')
+  const [subject, setSubject] = useState(book.subject ?? '')
   const [refetching, setRefetching] = useState(false)
 
   useEffect(() => {
     setMemo(book.memo ?? '')
     setLentTo(book.lentTo ?? '')
+    setSubject(book.subject ?? '')
   }, [book.id])
 
   // 예전에 잘못 매칭된 표지/정가를 다시 조회해서 덮어쓴다 — 이미 저장된 책은
@@ -92,23 +94,6 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
           <div style={{ marginTop: 6, fontSize: 12, color: 'var(--muted)' }}>
             {[book.publisher, formatAdded(book.addedAt)].filter(Boolean).join(' · ')}
           </div>
-          {book.subject && (
-            <div
-              style={{
-                marginTop: 12,
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'var(--accent)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 15,
-                padding: '5px 14px',
-              }}
-            >
-              {book.subject}
-            </div>
-          )}
-
           {(book.status || book.price || book.salePrice) && (
             <div style={{ marginTop: 14, fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>
               {book.status && book.status !== '정상' && (
@@ -159,6 +144,24 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
               중고로 팔기
             </a>
           </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>분류</div>
+          <input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            onBlur={() => onUpdate({ subject: subject.trim() || undefined })}
+            placeholder="분류를 입력하세요 (선택, 예: 인문·사회과학 > 역사)"
+            style={{
+              fontSize: 14,
+              padding: '10px 12px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 10,
+              width: '100%',
+            }}
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
