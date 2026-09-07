@@ -257,34 +257,34 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>{candidates.length}권 확인 중</div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {candidates.map((c) => (
                 <div
                   key={c.id}
                   style={{
                     display: 'flex',
-                    gap: 12,
+                    gap: 14,
                     alignItems: 'center',
-                    padding: 10,
+                    padding: 16,
                     background: 'var(--surface)',
                     border: '1px solid var(--border)',
-                    borderRadius: 10,
+                    borderRadius: 14,
                   }}
                 >
-                  <div style={{ width: 40, height: 56, flexShrink: 0 }}>
-                    <BookCover title={c.title} author="" hue={c.hue} coverUrl={c.coverUrl} radius={4} titleSize={9} />
+                  <div style={{ width: 56, height: 78, flexShrink: 0 }}>
+                    <BookCover title={c.title} author="" hue={c.hue} coverUrl={c.coverUrl} radius={6} titleSize={10} />
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 9 }}>
                     <input
                       value={c.title}
                       onChange={(e) => updateField(c.id, 'title', e.target.value)}
                       onBlur={() => lookupInfo(c)}
                       placeholder="제목을 입력하세요"
                       style={{
-                        fontSize: 14,
+                        fontSize: 17,
                         fontWeight: 600,
-                        paddingBottom: 2,
+                        padding: '6px 2px 8px',
                         borderBottom: '1px dashed var(--border)',
                         background: 'transparent',
                         fontStyle: c.title ? 'normal' : 'italic',
@@ -297,16 +297,16 @@ export default function Confirm({ existingBooks, onBack, onSave }: Props) {
                       onChange={(e) => updateField(c.id, 'author', e.target.value)}
                       onBlur={() => lookupInfo(c)}
                       placeholder="저자 (선택)"
-                      style={{ fontSize: 12, color: 'var(--muted)', background: 'transparent', width: '100%' }}
+                      style={{ fontSize: 14, padding: '4px 2px', color: 'var(--muted)', background: 'transparent', width: '100%' }}
                     />
                     <input
                       value={c.subject ?? ''}
                       onChange={(e) => updateField(c.id, 'subject', e.target.value)}
                       placeholder="분류 (선택, 예: 인문·사회과학 > 역사)"
-                      style={{ fontSize: 11, color: 'var(--accent)', background: 'transparent', width: '100%' }}
+                      style={{ fontSize: 13, padding: '4px 2px', color: 'var(--accent)', background: 'transparent', width: '100%' }}
                     />
                     {isDuplicate(c) && (
-                      <div style={{ fontSize: 11, color: '#c0392b', fontWeight: 600 }}>
+                      <div style={{ fontSize: 12, color: '#c0392b', fontWeight: 600 }}>
                         이미 서재에 있는 책이에요
                       </div>
                     )}
