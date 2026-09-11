@@ -61,6 +61,23 @@ export function ChevronDownIcon({ size = 14, color = 'var(--muted)', strokeWidth
   )
 }
 
+export function BookmarkIcon({ size = 18, color = 'var(--ink)', strokeWidth = 2 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 4h12v17l-6-4-6 4V4z" />
+    </svg>
+  )
+}
+
+export function ArrowRightIcon({ size = 16, color = 'var(--ink)', strokeWidth = 2 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  )
+}
+
 export function CameraIcon({ size = 28, color = 'white', strokeWidth = 2 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">

@@ -28,3 +28,19 @@ export type RecognizedCandidate = {
   salePrice?: number
   status?: string
 }
+
+// 아직 사지 않은, "읽고 싶은 책" 목록의 한 권. 소장 중인 Book과 구조는 비슷하지만
+// 빌려주기/한줄메모처럼 소장을 전제로 하는 필드는 없다.
+export type WishBook = {
+  id: string
+  title: string
+  author: string
+  publisher?: string
+  addedAt: string // ISO date string — 위시리스트에 추가한 날짜
+  hue: number
+  coverUrl?: string
+  price?: number // 정가
+  salePrice?: number // 판매가
+  status?: string // 판매 상태 ("정상", "품절", "절판" 등)
+  contents?: string // 카카오 도서 API가 주는 짧은 책 소개
+}

@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react'
 import type { Book } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
-import { SearchIcon, PlusIcon, ChevronDownIcon } from '../components/icons'
+import { SearchIcon, PlusIcon, ChevronDownIcon, BookmarkIcon } from '../components/icons'
 
 type Props = {
   books: Book[]
   onOpenBook: (id: string) => void
   onOpenSearch: () => void
   onAddBooks: () => void
+  onOpenWishlist: () => void
 }
 
 const UNSORTED = '미분류'
@@ -20,7 +21,7 @@ function roomKey(subject?: string): string {
   return trimmed || UNSORTED
 }
 
-export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: Props) {
+export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks, onOpenWishlist }: Props) {
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
 
@@ -63,9 +64,14 @@ export default function Shelf({ books, onOpenBook, onOpenSearch, onAddBooks }: P
           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 600 }}>내 서재</div>
           <div style={{ fontSize: 13, color: 'var(--muted)' }}>{books.length}권</div>
         </div>
-        <IconButton aria-label="검색" onClick={onOpenSearch}>
-          <SearchIcon />
-        </IconButton>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <IconButton aria-label="읽고 싶은 책" onClick={onOpenWishlist}>
+            <BookmarkIcon />
+          </IconButton>
+          <IconButton aria-label="검색" onClick={onOpenSearch}>
+            <SearchIcon />
+          </IconButton>
+        </div>
       </div>
 
       {roomNames.length > 1 && (

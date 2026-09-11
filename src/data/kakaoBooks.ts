@@ -7,10 +7,12 @@ const KAKAO_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY as string | undefined
 type KakaoBookDoc = {
   title: string
   authors: string[]
+  publisher: string
   thumbnail: string
   price: number
   sale_price: number
   status: string
+  contents: string
 }
 
 type KakaoBookResponse = {
@@ -86,5 +88,52 @@ export async function fetchBookInfo(title: string, author?: string): Promise<Boo
   } catch {
     cache.set(cacheKey, EMPTY_INFO)
     return EMPTY_INFO
+  }
+}
+
+export type SearchResult = {
+  title: string
+  author: string
+  publisher: string
+  coverUrl: string | null
+  price: number | null
+  salePrice: number | null
+  status: string | null
+  contents: string | null
+}
+
+/**
+ * "읽고 싶은 책" 검색용 — fetchBookInfo와 달리 하나를 골라주지 않고, 사람이 직접
+ * 고를 수 있도록 상위 결과 여러 개를 그대로 돌려준다.
+ */
+export async function searchBooks(query: string): Promise<SearchResult[]> {
+  const q = query.trim()
+  if (!q || !KAKAO_KEY) return []
+
+  try {
+    const url = new URL('https://dapi.kakao.com/v3/search/book')
+    url.searchParams.set('query', q)
+    url.searchParams.set('size', '15')
+
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `KakaoAK ${KAKAO_KEY}` },
+    })
+    if (!res.ok) return []
+
+    const data = (await res.json()) as KakaoBookResponse
+    const docs = data.documents ?? []
+
+    return docs.map((doc) => ({
+      title: doc.title || '',
+      author: doc.authors?.join(', ') ?? '',
+      publisher: doc.publisher || '',
+      coverUrl: doc.thumbnail || null,
+      price: typeof doc.price === 'number' && doc.price > 0 ? doc.price : null,
+      salePrice: typeof doc.sale_price === 'number' && doc.sale_price > 0 ? doc.sale_price : null,
+      status: doc.status || null,
+      contents: doc.contents?.trim() || null,
+    }))
+  } catch {
+    return []
   }
 }
