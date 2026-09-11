@@ -4,6 +4,7 @@ import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { fetchBookInfo } from '../data/kakaoBooks'
 import { PRESET_CATEGORIES } from '../data/categories'
+import { usedSearchUrl, SELL_URL } from '../utils/aladin'
 import { BackIcon } from '../components/icons'
 
 type Props = {
@@ -21,12 +22,6 @@ function formatAdded(iso: string) {
 function formatWon(n: number) {
   return `${n.toLocaleString('ko-KR')}원`
 }
-
-function usedSearchUrl(title: string) {
-  return `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Used&SearchWord=${encodeURIComponent(title)}`
-}
-
-const SELL_URL = 'https://www.aladin.co.kr/shop/usedshop/wc2b_sales.aspx'
 
 export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
   // 로컬 입력값 — 책이 바뀌면(다른 책 상세로 이동) 그 책의 값으로 다시 맞춘다.

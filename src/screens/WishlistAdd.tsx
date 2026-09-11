@@ -3,6 +3,7 @@ import type { Book, WishBook } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { searchBooks, type SearchResult } from '../data/kakaoBooks'
+import { usedSearchUrl } from '../utils/aladin'
 import { BackIcon, SearchIcon, PlusIcon, CheckIcon } from '../components/icons'
 
 type Props = {
@@ -146,6 +147,26 @@ export default function WishlistAdd({ existingBooks, wishlist, onBack, onAdd }: 
                       이미 서재에 있는 책이에요
                     </div>
                   )}
+                  <a
+                    href={usedSearchUrl(r.title)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      alignSelf: 'flex-start',
+                      marginTop: 4,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--muted)',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 10,
+                      padding: '3px 9px',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    중고가 확인
+                  </a>
                 </div>
 
                 <button

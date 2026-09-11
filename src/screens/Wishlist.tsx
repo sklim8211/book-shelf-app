@@ -2,6 +2,7 @@ import type { WishBook } from '../types'
 import IconButton from '../components/IconButton'
 import BookCover from '../components/BookCover'
 import { BackIcon, PlusIcon, ArrowRightIcon, CloseIcon } from '../components/icons'
+import { usedSearchUrl } from '../utils/aladin'
 
 type Props = {
   wishlist: WishBook[]
@@ -73,6 +74,25 @@ export default function Wishlist({ wishlist, onBack, onOpenAdd, onMoveToShelf, o
                     )}
                     {b.salePrice ? formatWon(b.salePrice) : b.price ? formatWon(b.price) : ''}
                   </div>
+                  <a
+                    href={usedSearchUrl(b.title)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      alignSelf: 'flex-start',
+                      marginTop: 2,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--muted)',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 10,
+                      padding: '3px 9px',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    중고가 확인
+                  </a>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
