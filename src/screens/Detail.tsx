@@ -119,7 +119,7 @@ export default function Detail({ book, onBack, onDelete, onUpdate }: Props) {
 
           <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
             <a
-              href={usedSearchUrl(book.title)}
+              href={usedSearchUrl(book.title, book.author)}
               target="_blank"
               rel="noopener noreferrer"
               style={{

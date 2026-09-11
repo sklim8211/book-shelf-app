@@ -148,7 +148,7 @@ export default function WishlistAdd({ existingBooks, wishlist, onBack, onAdd }: 
                     </div>
                   )}
                   <a
-                    href={usedSearchUrl(r.title)}
+                    href={usedSearchUrl(r.title, r.author)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
