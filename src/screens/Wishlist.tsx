@@ -75,7 +75,7 @@ export default function Wishlist({ wishlist, onBack, onOpenAdd, onMoveToShelf, o
                     {b.salePrice ? formatWon(b.salePrice) : b.price ? formatWon(b.price) : ''}
                   </div>
                   <a
-                    href={usedSearchUrl(b.title, b.author)}
+                    href={usedSearchUrl(b.title)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
